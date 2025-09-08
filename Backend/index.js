@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken')
 const multer = require('multer')
 const path = require("path")
 const cors = require('cors')
+const dotenv = require("dotenv").config()
 
 
 
@@ -14,7 +15,7 @@ app.use(express.json())
 app.use(cors())
 
 // dataBase connection
-mongoose.connect("mongodb+srv://manishchaudhary332:pC6iZj9Fpwk8gWwZ@cluster0.jmg5v.mongodb.net/E-Commerce")
+mongoose.connect(process.env.MONGODB_URL)
 
 // APi Creation
 
@@ -23,13 +24,7 @@ app.get('/', (req, res) => {
     res.send('Hello World!')
 })
 
-// Image storage Engine
-// const storage = multer.diskStorage({
-//     destination:'./upload/images',
-//     filename:(req,file,cb)=>{
-//         return cb(`null,${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
-//     }
-// })
+
 const storage = multer.diskStorage({
     destination: './upload/images',
     filename: (req, file, cb) => {
@@ -45,7 +40,7 @@ app.use('/images',express.static('upload/images'))
 app.post("/upload",upload.single("product"),(req,res)=>{
     res.json({
         success:1,
-        image_url:`http://localhost:${port}/images/${req.file.filename}`
+        image_url:`${process.env.BACKEND_URL}/images/${req.file.filename}`
     })
 })
 
@@ -176,7 +171,7 @@ app.post('/signup', async (req, res) => {
             id:user._id
         }
     }
-    const token = jwt.sign(data, 'secret_ecom');
+    const token = jwt.sign(data, process.env.JWT_SECRET);
     res.json({
         success: true,
         token,
@@ -197,7 +192,7 @@ app.post('/login',async(req,res)=>{
                     id:user._id 
                 }
             }
-            const token = jwt.sign(data,'secret_ecom');
+            const token = jwt.sign(data,process.env.JWT_SECRET);
             res.json({success:true,token})
         }else{
             res.json({success:false, errors:"wrong password"})
@@ -211,7 +206,7 @@ app.post('/login',async(req,res)=>{
             id: user._id
         }
     }
-    const token = jwt.sign(data, 'secret_ecom');
+    const token = jwt.sign(data,process.env.JWT_SECRET);
     res.json({
         success: true,
         token,
@@ -283,11 +278,11 @@ app.post('/getcart',fetchUser,async(req,res)=>{
     
 })
 
-app.listen(port, (error) => {
+app.listen(process.env.PORT, (error) => {
     if(!error){
          console.log(`Server is running on port ${port}`)
     }else{
-        console.log(`Error : ${error}`)
+        console.log(`Error : ${process.env.PORT}`)
     }
 })
 
