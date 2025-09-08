@@ -8,7 +8,7 @@ const ListProduct = () => {
   const [allproducts, setallproducts] = useState([])
 
   const fetchInfo = async()=>{
-    await fetch('http://localhost:4000/allproducts').then((res)=>res.json()).then((data)=>{setallproducts(data)})
+    await fetch(`${API_URL}/allproducts`).then((res)=>res.json()).then((data)=>{setallproducts(data)})
   }
 
   useEffect(()=>{
@@ -16,7 +16,7 @@ const ListProduct = () => {
   },[])
 
   const remove_product = async (id)=>{
-    await fetch('http://localhost:4000/removeproduct',{
+    await fetch(`${API_URL}/removeproduct`,{
       method:'POST',
       headers:{
         Accept:'application/json',
