@@ -55,20 +55,27 @@ const upload = multer({ storage: storage })
 
 // create upload Endpoint for Images
 // app.use('/images',express.static('upload/images'))
-app.post("/upload", upload.single("product"), async (req,res)=>{
+app.post("/upload", upload.single("product"), async (req,res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ success:0, message:"No file uploaded" });
+    }
+
     const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "ecommerce_products" // folder in cloudinary
+      folder: "ecommerce_products"
     });
+
     res.json({
-        success:1,
-        image_url: result.secure_url  // This URL will be used in frontend
+      success:1,
+      image_url: result.secure_url
     });
+
   } catch(err){
-    console.log(err);
-    res.status(500).json({ success:0, message:"Image upload failed"});
+    console.log("UPLOAD ERROR:", err);
+    res.status(500).json({ success:0, message:"Image upload failed" });
   }
 });
+
 
 // Schema for Creating Products
 const Product = mongoose.model("Product",{
