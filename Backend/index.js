@@ -6,6 +6,12 @@ const jwt = require('jsonwebtoken')
 const multer = require('multer')
 const path = require("path")
 const cors = require('cors')
+const cloudinary = require('cloudinary').v2;    
+cloudinary.config({ 
+  cloud_name: process.env.CLOUD_NAME, 
+  api_key: process.env.CLOUD_API_KEY, 
+  api_secret: process.env.CLOUD_API_SECRET 
+});
 const dotenv = require('dotenv').config()
 
 
@@ -30,24 +36,39 @@ app.get('/', (req, res) => {
 //         return cb(`null,${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
 //     }
 // })
+// const storage = multer.diskStorage({
+//     destination: './upload/images',
+//     filename: (req, file, cb) => {
+//         cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname))
+//     }
+// })
+
 const storage = multer.diskStorage({
-    destination: './upload/images',
-    filename: (req, file, cb) => {
-        cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname))
-    }
-})
+  destination: './upload/images',
+  filename: (req, file, cb) => {
+      cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname))
+  }
+});
 
 
 const upload = multer({ storage: storage })
 
 // create upload Endpoint for Images
-app.use('/images',express.static('upload/images'))
-app.post("/upload",upload.single("product"),(req,res)=>{
+// app.use('/images',express.static('upload/images'))
+app.post("/upload", upload.single("product"), async (req,res)=>{
+  try {
+    const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "ecommerce_products" // folder in cloudinary
+    });
     res.json({
         success:1,
-        image_url:`${process.env.BACKEND_URL}/images/${req.file.filename}`
-    })
-})
+        image_url: result.secure_url  // This URL will be used in frontend
+    });
+  } catch(err){
+    console.log(err);
+    res.status(500).json({ success:0, message:"Image upload failed"});
+  }
+});
 
 // Schema for Creating Products
 const Product = mongoose.model("Product",{
@@ -85,35 +106,64 @@ const Product = mongoose.model("Product",{
 
 })
 
-app.post('/addproduct',async(req,res)=>{
+// app.post('/addproduct',async(req,res)=>{
+//     const products = await Product.find({});
+//     let id;
+//     if(products.length>0){
+//         let last_product_array = products.slice(-1)
+//         let last_product = last_product_array[0]
+//         id = last_product.id + 1
+//     }else{
+//         id = 1
+//     }
+//     const product = new Product({
+//         id:id,
+//         name:req.body.name,
+//         image:req.body.image,
+//         category:req.body.category,
+//         new_price:req.body.new_price,
+//         old_price:req.body.old_price,
+//     });
+//     console.log(product);
+    
+//     await product.save()
+//     console.log("saved");
+//     res.json({
+//         success:true,
+//         name:req.body.name
+//     })
+// })
+
+
+
+// Creating APi for Removing products
+app.post('/addproduct', async (req,res)=>{
     const products = await Product.find({});
     let id;
     if(products.length>0){
-        let last_product_array = products.slice(-1)
-        let last_product = last_product_array[0]
-        id = last_product.id + 1
-    }else{
-        id = 1
+        let last_product = products[products.length - 1];
+        id = last_product.id + 1;
+    } else {
+        id = 1;
     }
+
     const product = new Product({
         id:id,
         name:req.body.name,
-        image:req.body.image,
+        image:req.body.image, // frontend me Cloudinary URL bhejna hoga
         category:req.body.category,
         new_price:req.body.new_price,
         old_price:req.body.old_price,
     });
-    console.log(product);
-    
-    await product.save()
-    console.log("saved");
-    res.json({
-        success:true,
-        name:req.body.name
-    })
-})
 
-// Creating APi for Removing products
+    await product.save();
+    res.json({ success:true, name:req.body.name });
+});
+
+
+
+
+
 app.post('/removeproduct',async(req,res)=>{
     const product = await Product.findOneAndDelete({ id:req.body.id });
         console.log("Removed");
