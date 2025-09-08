@@ -48,7 +48,7 @@ const AddProduct = () => {
                 method:'POST',
                 headers:{
                     Accept:'application/json',
-                    'Content-Type':'application/json'
+                    // 'Content-Type':'application/json'
                 },
                 body:JSON.stringify(product)
             }).then((resp)=>resp.json()).then((data)=>{
@@ -86,7 +86,7 @@ const AddProduct = () => {
                 <label htmlFor="file-input">
                     <img src={image?URL.createObjectURL(image):upload_area} className='addproduct-thumnail-img' alt="" />
                 </label>
-                <input onChange={imageHandler} type="file" name='img' id="file-input" hidden />
+                <input onChange={imageHandler} type="file" name='product' id="file-input" hidden />
             </div>
             <button onClick={()=>Add_Product()} className='addproduct-btn'>ADD</button>
     </div>
