@@ -1,3 +1,4 @@
+const API_URL = import.meta.env.VITE_API_URL;
 import React from 'react'
 import "./Newcollections.css"
 import new_collection from "../Assets/new_collections"
@@ -9,7 +10,7 @@ const Newcollections = () => {
   const [new_collection, setnew_collection] = useState([])
 
   useEffect(()=>{
-    fetch('http://localhost:4000/newcollections')
+    fetch(`${API_URL}/newcollections`)
     .then((response)=>response.json())
     .then((data)=>setnew_collection(data))
   },[])

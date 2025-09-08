@@ -1,3 +1,4 @@
+const API_URL = import.meta.env.VITE_API_URL;
 import React from 'react'
 import "./Popular.css"
 import data_product from "../Assets/data"
@@ -11,7 +12,7 @@ const Popular = () => {
   const [popularProducts,setpopularProducts] = useState([])
 
   useEffect(()=>{
-      fetch('http://localhost:4000/popularinwomen')
+      fetch(`${API_URL}/popularinwomen`)
       .then((response)=>response.json())
       .then((data)=>setpopularProducts(data));
   },[])
