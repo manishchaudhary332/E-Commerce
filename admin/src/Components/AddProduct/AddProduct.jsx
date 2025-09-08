@@ -1,9 +1,7 @@
-const API_URL = import.meta.env.VITE_API_URL;
 import React from 'react'
 import "./AddProduct.css"
 import upload_area from "../../assets/upload_area.svg"
 import { useState } from 'react'
-
 
 const AddProduct = () => {
     const [image, setImage] = useState(false)
@@ -32,7 +30,7 @@ const AddProduct = () => {
         let formData =  new FormData();
         formData.append('product',image)
 
-        await fetch(`${API_URL}/upload`,{
+        await fetch('http://localhost:4000/upload',{
             method:'POST',
             headers:{
                 Accept:'application/json',
@@ -44,11 +42,11 @@ const AddProduct = () => {
         if(responseData.success){
             product.image = responseData.image_url;
             console.log(product);
-            await fetch(`${API_URL}/addproduct`,{
+            await fetch('http://localhost:4000/addproduct',{
                 method:'POST',
                 headers:{
                     Accept:'application/json',
-                    // 'Content-Type':'application/json'
+                    'Content-Type':'application/json'
                 },
                 body:JSON.stringify(product)
             }).then((resp)=>resp.json()).then((data)=>{
@@ -86,7 +84,7 @@ const AddProduct = () => {
                 <label htmlFor="file-input">
                     <img src={image?URL.createObjectURL(image):upload_area} className='addproduct-thumnail-img' alt="" />
                 </label>
-                <input onChange={imageHandler} type="file" name='product' id="file-input" hidden />
+                <input onChange={imageHandler} type="file" name='img' id="file-input" hidden />
             </div>
             <button onClick={()=>Add_Product()} className='addproduct-btn'>ADD</button>
     </div>

@@ -116,3 +116,25 @@
         font-size: 16px;
     } 
 }
+@media(max-width:500px){
+    .loginsignup{
+        background: red;
+        height: 500px;
+    }
+    .loginsignup-container{
+        padding: 15px 20px;
+    }
+    .loginsignup-container h1{
+        font-size: 20px;
+    }
+    .loginsignup-fields{
+        margin-top: 18px;
+    }
+    .loginsignup-fields input{
+        height: 50px;
+    }
+    .loginsignup-container button{
+        height: 50px;
+        font-size: 16px;
+    } 
+}

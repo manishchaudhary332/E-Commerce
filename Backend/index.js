@@ -1,3 +1,4 @@
+const port = 4000
 
 const express = require('express')
 const app = express()
@@ -6,21 +7,14 @@ const jwt = require('jsonwebtoken')
 const multer = require('multer')
 const path = require("path")
 const cors = require('cors')
-const cloudinary = require('cloudinary').v2;    
-cloudinary.config({ 
-  cloud_name: process.env.CLOUD_NAME, 
-  api_key: process.env.CLOUD_API_KEY, 
-  api_secret: process.env.CLOUD_API_SECRET 
-});
-const dotenv = require('dotenv').config()
 
 
 
 app.use(express.json())
 app.use(cors())
 
-// dataBase connection  
-mongoose.connect(process.env.MONGODB_URL)
+// dataBase connection
+mongoose.connect("mongodb+srv://manishchaudhary332:pC6iZj9Fpwk8gWwZ@cluster0.jmg5v.mongodb.net/E-Commerce")
 
 // APi Creation
 
@@ -36,46 +30,24 @@ app.get('/', (req, res) => {
 //         return cb(`null,${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
 //     }
 // })
-// const storage = multer.diskStorage({
-//     destination: './upload/images',
-//     filename: (req, file, cb) => {
-//         cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname))
-//     }
-// })
-
 const storage = multer.diskStorage({
-  destination: './upload/images',
-  filename: (req, file, cb) => {
-      cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname))
-  }
-});
+    destination: './upload/images',
+    filename: (req, file, cb) => {
+        cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname))
+    }
+})
 
 
 const upload = multer({ storage: storage })
 
 // create upload Endpoint for Images
-// app.use('/images',express.static('upload/images'))
-app.post("/upload", upload.single("product"), async (req,res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ success:0, message:"No file uploaded" });
-    }
-
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "ecommerce_products"
-    });
-
+app.use('/images',express.static('upload/images'))
+app.post("/upload",upload.single("product"),(req,res)=>{
     res.json({
-      success:1,
-      image_url: result.secure_url
-    });
-
-  } catch(err){
-    console.log("UPLOAD ERROR:", err);
-    res.status(500).json({ success:0, message:"Image upload failed" });
-  }
-});
-
+        success:1,
+        image_url:`http://localhost:${port}/images/${req.file.filename}`
+    })
+})
 
 // Schema for Creating Products
 const Product = mongoose.model("Product",{
@@ -113,64 +85,35 @@ const Product = mongoose.model("Product",{
 
 })
 
-// app.post('/addproduct',async(req,res)=>{
-//     const products = await Product.find({});
-//     let id;
-//     if(products.length>0){
-//         let last_product_array = products.slice(-1)
-//         let last_product = last_product_array[0]
-//         id = last_product.id + 1
-//     }else{
-//         id = 1
-//     }
-//     const product = new Product({
-//         id:id,
-//         name:req.body.name,
-//         image:req.body.image,
-//         category:req.body.category,
-//         new_price:req.body.new_price,
-//         old_price:req.body.old_price,
-//     });
-//     console.log(product);
-    
-//     await product.save()
-//     console.log("saved");
-//     res.json({
-//         success:true,
-//         name:req.body.name
-//     })
-// })
-
-
-
-// Creating APi for Removing products
-app.post('/addproduct', async (req,res)=>{
+app.post('/addproduct',async(req,res)=>{
     const products = await Product.find({});
     let id;
     if(products.length>0){
-        let last_product = products[products.length - 1];
-        id = last_product.id + 1;
-    } else {
-        id = 1;
+        let last_product_array = products.slice(-1)
+        let last_product = last_product_array[0]
+        id = last_product.id + 1
+    }else{
+        id = 1
     }
-
     const product = new Product({
         id:id,
         name:req.body.name,
-        image:req.body.image, // frontend me Cloudinary URL bhejna hoga
+        image:req.body.image,
         category:req.body.category,
         new_price:req.body.new_price,
         old_price:req.body.old_price,
     });
+    console.log(product);
+    
+    await product.save()
+    console.log("saved");
+    res.json({
+        success:true,
+        name:req.body.name
+    })
+})
 
-    await product.save();
-    res.json({ success:true, name:req.body.name });
-});
-
-
-
-
-
+// Creating APi for Removing products
 app.post('/removeproduct',async(req,res)=>{
     const product = await Product.findOneAndDelete({ id:req.body.id });
         console.log("Removed");
@@ -233,7 +176,7 @@ app.post('/signup', async (req, res) => {
             id:user._id
         }
     }
-    const token = jwt.sign(data, process.env.JWT_SECRET);
+    const token = jwt.sign(data, 'secret_ecom');
     res.json({
         success: true,
         token,
@@ -254,7 +197,7 @@ app.post('/login',async(req,res)=>{
                     id:user._id 
                 }
             }
-            const token = jwt.sign(data,process.env.JWT_SECRET);
+            const token = jwt.sign(data,'secret_ecom');
             res.json({success:true,token})
         }else{
             res.json({success:false, errors:"wrong password"})
@@ -268,7 +211,7 @@ app.post('/login',async(req,res)=>{
             id: user._id
         }
     }
-    const token = jwt.sign(data,process.env.JWT_SECRET);
+    const token = jwt.sign(data, 'secret_ecom');
     res.json({
         success: true,
         token,
@@ -301,7 +244,7 @@ const fetchUser = async (req,res,next)=>{
         res.status(401).send({errors:"Please authenticate using valid token"})
     }else{
         try {
-            const data = jwt.verify(token,process.env.JWT_SECRET)
+            const data = jwt.verify(token,'secret_ecom')
             req.user = data.user;
             next()
         } catch (error) {
@@ -340,9 +283,9 @@ app.post('/getcart',fetchUser,async(req,res)=>{
     
 })
 
-app.listen(process.env.PORT, (error) => {
+app.listen(port, (error) => {
     if(!error){
-         console.log(`Server is running on port ${process.env.PORT}`)
+         console.log(`Server is running on port ${port}`)
     }else{
         console.log(`Error : ${error}`)
     }
