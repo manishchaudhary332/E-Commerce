@@ -62,21 +62,40 @@ const upload = multer({ storage });
 //     })
 // })
 
+// app.post("/upload", upload.single("product"), (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ success: 0, message: "No file uploaded" });
+//     }
+
+//     res.json({
+//       success: 1,
+//       image_url: req.file.path, // Cloudinary ka hosted URL
+//     });
+//   } catch (error) {
+//     console.error("Upload Error:", error);
+//     res.status(500).json({ success: 0, message: "Upload failed", error });
+//   }
+// });
 app.post("/upload", upload.single("product"), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: 0, message: "No file uploaded" });
     }
 
+    console.log("Uploaded File:", req.file); // 👈 check karo console me kya aa raha hai
+
     res.json({
       success: 1,
-      image_url: req.file.path, // Cloudinary ka hosted URL
+      image_url: req.file.path || req.file.secure_url, // ✅ Cloudinary ka URL return
     });
   } catch (error) {
     console.error("Upload Error:", error);
     res.status(500).json({ success: 0, message: "Upload failed", error });
   }
 });
+
+
 
 
 // Schema for Creating Products
